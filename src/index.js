@@ -1,40 +1,59 @@
 
-const { app, BrowserWindow, shell } = require('electron')
-const { logger } = require('./log/index.js')
-const path = require('path')
-const { registerIpcMainHandle } = require('./ipcModule/ipcMainFns.js')
-const { startStaticServer } = require('./koaServe/index.js')
+
 
 try {
-    function createWindow(params) {
+    const { app, BrowserWindow, shell, globalShortcut } = require('electron')
+    const { logger } = require('./log/index.js')
+    const path = require('path')
+    const { registerIpcMainHandle } = require('./ipcModule/ipcMainFns.js')
+    const { startStaticServer } = require('./koaServe/index.js')
+    const { checkUpdate } = require('./upload/index.js')
+    const { customMenuHandle } = require('./customMenu/index.js')
+    const { registerGlobalShortcut } = require('./customGlobal/index.js')
+    const createWindow = (params) => {
         // Create the browser window.
         const win = new BrowserWindow({
-            width: 3840,
-            height: 1200,
+            width: 1920,
+            height: 1080,
             webPreferences: {
                 contextIsolation: true,
                 preload: path.join(__dirname, '/ipcModule/preload.js')
             }
         })
-        // win.fullScreen = true // 开启全屏
+        // 自定义菜单
+        // customMenuHandle()
+        win.removeMenu()
+        win.fullScreen = true // 开启全屏
         if (params) {
             win.loadURL(params)
         } else {
-            win.loadFile(`${app.getAppPath()}/h5/index.html`)
+            win.loadURL(`file:///${app.getAppPath()}/h5/index.html#/overview/index`)
         }
-        win.webContents.openDevTools()
+        // 打开开发者工具
+        // win.webContents.openDevTools()
         win.webContents.setWindowOpenHandler((details) => {
             let url = details.url
-            shell.openExternal(url);
+            if (url.includes('https://krtservice.cn/')) {
+                win.loadURL(url)
+            } else {
+                shell.openExternal(url);
+            }
             return { action: 'deny' }
         })
         win.webContents.on('did-finish-load', () => {
             startStaticServer(win)
         })
-        registerIpcMainHandle()
+        
+        // 注册主进程事件监听
+        registerIpcMainHandle(win)
+        // 监听更新
+        checkUpdate()
+        // 注册全局快捷键
+        registerGlobalShortcut(win)
     }
 
     app.on('window-all-closed', () => {
+
         if (process.platform !== 'darwin') {
             app.quit()
         }
@@ -50,10 +69,10 @@ try {
     })
 
     app.on('before-quit', () => {
+
         logger.info('触发事件：before-quit')
     })
     app.on('browser-window-created', (event, win) => {
-        win.maximize()
         win.webContents.on('did-finish-load', () => {
             logger.info('触发事件：before-quit')
             let url = win.webContents.getURL()
@@ -119,8 +138,8 @@ try {
             createWindow()
         }
     };
+
 } catch (e) {
-    logger.error(e)
     process.exit();
 }
 
