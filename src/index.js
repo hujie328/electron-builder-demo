@@ -13,8 +13,8 @@ try {
     const createWindow = (params) => {
         // Create the browser window.
         const win = new BrowserWindow({
-            width: 1920,
-            height: 1080,
+            // width: 1920,
+            // height: 1080,
             webPreferences: {
                 contextIsolation: true,
                 preload: path.join(__dirname, '/ipcModule/preload.js')

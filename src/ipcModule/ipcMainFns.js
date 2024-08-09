@@ -15,10 +15,10 @@ const registerIpcMainHandle = (win) => {
 
     ipcMain.on('clean-cookies', (event) => {
         const options = {
-            storages: ['cookies'],
+            storages: ['appcache', 'filesystem', 'indexdb', 'localstorage', 'shadercache', 'websql', 'serviceworkers', 'cachestorage'],
         }
         logger.info(`clean-cookies:--->token过期清除内核缓存`)
-
+        win.webContents.session.clearCache()
         // 清除缓存，很重要，出现了接口请求token永远不变的情况
         win.webContents.session.clearStorageData(options)
     })
