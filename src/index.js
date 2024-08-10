@@ -2,26 +2,33 @@
 
 
 try {
-    const { app, BrowserWindow, shell, globalShortcut } = require('electron')
+    const { app, BrowserWindow, shell } = require('electron')
     const { logger } = require('./log/index.js')
     const path = require('path')
     const { registerIpcMainHandle } = require('./ipcModule/ipcMainFns.js')
     const { startStaticServer } = require('./koaServe/index.js')
     const { checkUpdate } = require('./upload/index.js')
-    const { customMenuHandle } = require('./customMenu/index.js')
+    const { customMenuHandle,customTrayMenu } = require('./customMenu/index.js')
     const { registerGlobalShortcut } = require('./customGlobal/index.js')
+    
+    // 声明window系统托盘图片,必须声明在全局防止托盘图标丢失
+    // let tray = null
+    startStaticServer()
+
     const createWindow = (params) => {
         // Create the browser window.
         const win = new BrowserWindow({
-            // width: 1920,
-            // height: 1080,
+            width: 3840,
+            height: 1200,
             webPreferences: {
                 contextIsolation: true,
                 preload: path.join(__dirname, '/ipcModule/preload.js')
             }
         })
+        
         // 自定义菜单
         // customMenuHandle()
+        customTrayMenu(win)
         win.removeMenu()
         win.fullScreen = true // 开启全屏
         if (params) {
@@ -40,10 +47,7 @@ try {
             }
             return { action: 'deny' }
         })
-        win.webContents.on('did-finish-load', () => {
-            startStaticServer(win)
-        })
-        
+
         // 注册主进程事件监听
         registerIpcMainHandle(win)
         // 监听更新
@@ -140,6 +144,8 @@ try {
     };
 
 } catch (e) {
+    const { logger } = require('./log/index.js')
+    logger.error(e)
     process.exit();
 }
 

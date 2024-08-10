@@ -13,9 +13,13 @@ const registerIpcMainHandle = (win) => {
         return store.get('data_center_access_token') || ""
     })
 
+    ipcMain.handle('get-serve-address', (event, params) => {
+        return store.get('serve_url') || ""
+    })
+    
     ipcMain.on('clean-cookies', (event) => {
         const options = {
-            storages: ['appcache', 'filesystem', 'indexdb', 'localstorage', 'shadercache', 'websql', 'serviceworkers', 'cachestorage'],
+            storages: ['cookies', 'filesystem', 'indexdb', 'shadercache', 'websql', 'serviceworkers', 'cachestorage'],
         }
         logger.info(`clean-cookies:--->token过期清除内核缓存`)
         win.webContents.session.clearCache()

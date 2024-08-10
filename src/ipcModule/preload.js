@@ -2,9 +2,9 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 
 contextBridge.exposeInMainWorld('electronFns', {
-  onServeSucceed: (callback) => {
-    ipcRenderer.on('serve-succeed', (event, msg) => {
-      callback(msg)
+  getServeAddress: (callback) => {
+    ipcRenderer.invoke('get-serve-address').then(res => {
+      callback(res)
     })
   },
   isRunInElectron: () => {

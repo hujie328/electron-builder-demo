@@ -1,12 +1,12 @@
-const { Menu, app, BrowserWindow } = require('electron')
-
-const customMenuHandle = () => {
+const { Menu, app, Tray } = require('electron')
+const path = require('path')
+const customMenuHandle = (win) => {
     //创建菜单集合
     let template = [
         {
             label: 'Home',
             click: () => {
-                BrowserWindow.getAllWindows()[0].loadURL(`file:///${app.getAppPath()}/h5/index.html#/overview/index`)
+                win.loadURL(`file:///${app.getAppPath()}/h5/index.html#/overview/index`)
             }
         }
     ]
@@ -15,7 +15,24 @@ const customMenuHandle = () => {
     //主进程设置应用菜单
     Menu.setApplicationMenu(menu)
 }
+let tray = null
+
+const customTrayMenu = (win) => {
+    let iconPath = path.join(app.getAppPath(), "/icons/icon2.png")
+    tray = new Tray(iconPath)
+    // 添加右下角的菜单
+    let trayMenu = Menu.buildFromTemplate([
+        {
+            label: "退出",
+            click: () => {
+                win.close()
+            }
+        }
+    ])
+    tray.setContextMenu(trayMenu)
+}
 
 module.exports = {
-    customMenuHandle
+    customMenuHandle,
+    customTrayMenu
 }

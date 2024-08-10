@@ -4,9 +4,10 @@ const koa2 = require("koa")
 const http = require('http');
 const static = require('koa-static');
 const { logger } = require('../log/index.js')
+const { store } = require('../store/index.js')
 
 let serve = null
-const startStaticServer = (win) => {
+const startStaticServer = () => {
     if (serve) return
     serve = new koa2()
     serve.use(static(path.join(app.getAppPath(), '../assets'), {
@@ -19,7 +20,7 @@ const startStaticServer = (win) => {
     let port = 50080
     httpServe.listen(port, () => {
         logger.info(`服务器启动成功，端口号：${port}`)
-        win.webContents.send("serve-succeed", `http://localhost:${port}`)
+        store.set('serve_url', `http://localhost:${port}`)
     })
     httpServe.on('error', (err) => {
         if (err.code === 'EADDRINUSE') {
